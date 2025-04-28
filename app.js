@@ -7,11 +7,11 @@ const path = require('path'); // Node.js module for working with file paths (use
 
 // --- Configuration ---
 // !!! IMPORTANT: Replace with the actual name of the S3 bucket you created !!!
-const S3_BUCKET_NAME = 'YOUR_UNIQUE_BUCKET_NAME';
+const S3_BUCKET_NAME = 'project-file-app-bucket-1414';
 // Determine the AWS region. It will try to get it from the environment variable
 // (which the EC2 instance might have), otherwise defaults to 'us-east-1'.
 // Ensure this matches the region of your S3 bucket and EC2 instance.
-const S3_REGION = process.env.AWS_REGION || 'us-east-1';
+const S3_REGION = process.env.AWS_REGION || 'eu-north-1';
 // Define allowed file extensions (lowercase)
 const ALLOWED_EXTENSIONS = ['.txt', '.pdf', '.png', '.jpg', '.jpeg'];
 // Define the port the web server will listen on. Port 80 is standard HTTP.
