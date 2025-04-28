@@ -61,37 +61,123 @@ const htmlForm = (message = '', downloadUrl = '', uploadedFilename = '') => `
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Simple Node File Uploader</title>
+    <title>Node File Uploader - Styled</title>
     <style>
-        body { font-family: sans-serif; margin: 2em; }
-        .message { padding: 1em; margin-bottom: 1em; border-radius: 5px; }
-        .success { background-color: #e6ffed; border: 1px solid #b7ebc0; color: #0f5132; }
-        .error { background-color: #f8d7da; border: 1px solid #f5c2c7; color: #842029; }
-        label, input { display: block; margin-bottom: 0.5em; }
-        input[type="submit"] { padding: 0.5em 1em; cursor: pointer; }
-        hr { margin: 2em 0; }
-        small { color: #6c757d; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            margin: 2em auto; /* Center content */
+            max-width: 600px; /* Limit width */
+            line-height: 1.6;
+            background-color: #f8f9fa;
+            color: #212529;
+            padding: 1em;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0056b3;
+            text-align: center;
+            border-bottom: 2px solid #0056b3;
+            padding-bottom: 0.5em;
+        }
+        h2 {
+            color: #198754; /* Green color for success section */
+            margin-top: 1.5em;
+            border-bottom: 1px solid #198754;
+            padding-bottom: 0.3em;
+        }
+        form {
+            margin-top: 1.5em;
+            padding: 1.5em;
+            background-color: #ffffff;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+        }
+        input[type="file"] {
+            display: block;
+            margin-bottom: 1em;
+            padding: 0.5em;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            width: calc(100% - 1.2em); /* Adjust width */
+        }
+        input[type="submit"] {
+            display: block;
+            width: 100%;
+            padding: 0.75em 1em;
+            cursor: pointer;
+            background-color: #0d6efd; /* Blue button */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: background-color 0.2s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #0b5ed7;
+        }
+        .message { /* Style for the message paragraph */
+            padding: 1em;
+            margin-bottom: 1em;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .success { /* Class for success messages */
+            background-color: #d1e7dd;
+            border: 1px solid #badbcc;
+            color: #0f5132;
+        }
+        .error { /* Class for error messages */
+            background-color: #f8d7da;
+            border: 1px solid #f5c2c7;
+            color: #842029;
+        }
+        small {
+            color: #6c757d;
+            display: block; /* Ensure it takes its own line */
+            text-align: center;
+            margin-top: 1em;
+        }
+        hr {
+            margin: 2em 0;
+            border: 0;
+            border-top: 1px solid #dee2e6;
+        }
+        a {
+            color: #0d6efd;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        #download-section p { /* Style paragraphs in download section */
+          margin-bottom: 0.5em;
+        }
     </style>
 </head>
 <body>
-    <h1>Upload New File</h1>
+    <h1>File Upload Service</h1>
 
-    ${message ? `<p class="message ${message.toLowerCase().startsWith('error') ? 'error' : 'success'}">${message}</p>` : ''}
+    ${message ? `<p class="message ${message.toLowerCase().includes('error') ? 'error' : 'success'}">${message}</p>` : ''}
 
     <form method="post" enctype="multipart/form-data" action="/">
-        <label for="fileInput">Choose file:</label>
+        <label for="fileInput">Choose file to upload:</label>
         <input type="file" name="file" id="fileInput" required>
-        <input type="submit" value="Upload">
+        <input type="submit" value="Upload File">
     </form>
 
     <p><small>Allowed file types: ${ALLOWED_EXTENSIONS.join(', ')}</small></p>
 
     ${downloadUrl ? `
-    <hr>
-    <h2>Download Your File:</h2>
-    <p>Original Filename: ${uploadedFilename}</p>
-    <p><a href="${downloadUrl}" target="_blank" rel="noopener noreferrer">Click here to download</a></p>
-    <p><small>Link expires in 1 hour.</small></p>
+    <div id="download-section">
+        <hr>
+        <h2>Download Your File:</h2>
+        <p>Original Filename: <strong>${uploadedFilename}</strong></p>
+        <p><a href="${downloadUrl}" target="_blank" rel="noopener noreferrer">Click here to download</a></p>
+        <p><small>Link expires in 1 hour.</small></p>
+    </div>
     ` : ''}
 </body>
 </html>
