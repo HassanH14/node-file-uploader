@@ -1,0 +1,26 @@
+{
+  "name": "node-file-uploader",
+  "version": "1.0.0",
+  "description": "Simple file uploader using Node.js, Express, and S3",
+  "main": "app.js", 
+  "scripts": {
+    "start": "node app.js", 
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "aws",
+    "s3",
+    "express",
+    "node",
+    "upload"
+  ],
+  "author": "Your Team Name",
+  "license": "ISC",
+  "dependencies": {
+  
+    "@aws-sdk/client-s3": "^3.481.0",
+    "@aws-sdk/s3-request-presigner": "^3.481.0",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}
