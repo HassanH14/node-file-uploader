@@ -1,15 +1,15 @@
 // Import necessary modules
 const express = require('express'); // Web framework
 const multer = require('multer'); // Middleware for handling file uploads
-const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3'); // AWS S3 SDK v3 commands
-const { getSignedUrl } = require('@aws-sdk/s3-request-presigner'); // SDK v3 tool for presigned URLs
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3'); // AWS S3 SDK v3 commands (Removed GetObjectCommand and getSignedUrl)
+// Removed: const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const path = require('path'); // Node.js module for working with file paths (used for extension checking)
 
 // --- Configuration ---
 // !!! IMPORTANT: Replace with the actual name of the S3 bucket you created !!!
 const S3_BUCKET_NAME = 'project-file-app-bucket-1414';
 // Determine the AWS region. It will try to get it from the environment variable
-// (which the EC2 instance might have), otherwise defaults to 'us-east-1'.
+// (which the EC2 instance might have), otherwise defaults to 'eu-north-1'.
 // Ensure this matches the region of your S3 bucket and EC2 instance.
 const S3_REGION = process.env.AWS_REGION || 'eu-north-1';
 // Define allowed file extensions (lowercase)
@@ -176,7 +176,7 @@ const htmlForm = (message = '', downloadUrl = '', uploadedFilename = '') => `
         <h2>Download Your File:</h2>
         <p>Original Filename: <strong>${uploadedFilename}</strong></p>
         <p><a href="${downloadUrl}" target="_blank" rel="noopener noreferrer">Click here to download</a></p>
-        <p><small>Link expires in 1 hour.</small></p>
+        <p><small>Public download link.</small></p> {/* <-- Updated text here */}
     </div>
     ` : ''}
 </body>
@@ -212,11 +212,16 @@ app.post('/', upload.single('file'), async (req, res) => {
     console.log(`Attempting to upload ${uniqueFilename} (Original: ${req.file.originalname}) to bucket ${S3_BUCKET_NAME}`);
 
     // Prepare the parameters for the S3 PutObjectCommand
+    // *** IMPORTANT SECURITY NOTE ***
+    // Setting ACL: 'public-read' makes the uploaded object publicly accessible by anyone with the URL.
+    // Ensure your S3 bucket settings also allow public access if you use this.
+    // Only use this if you INTEND for the files to be public.
     const putObjectParams = {
         Bucket: S3_BUCKET_NAME,        // Target bucket name
         Key: uniqueFilename,           // The name the file will have in S3
         Body: req.file.buffer,         // The actual file content (as a Buffer from memoryStorage)
-        ContentType: req.file.mimetype // Helps browsers interpret the file correctly when downloaded
+        ContentType: req.file.mimetype,// Helps browsers interpret the file correctly when downloaded
+        ACL: 'public-read'             // *** Makes the object public ***
     };
 
     try {
@@ -226,31 +231,24 @@ app.post('/', upload.single('file'), async (req, res) => {
         const putResult = await s3Client.send(putCommand); // Use await as this is asynchronous
         console.log(`Successfully uploaded ${uniqueFilename}. S3 Response ETag: ${putResult.ETag}`);
 
-        // --- Generate Presigned Download URL ---
-        console.log("Generating presigned URL...");
-        const getObjectParams = {
-            Bucket: S3_BUCKET_NAME,
-            Key: uniqueFilename,
-            // You can force download by setting ResponseContentDisposition:
-            // ResponseContentDisposition: `attachment; filename="${req.file.originalname}"`
-        };
-        const getCommand = new GetObjectCommand(getObjectParams);
+        // --- Generate Direct Public URL (No Expiry) ---
+        // Construct the public URL directly. This only works if the object ACL is 'public-read'
+        // and the bucket settings allow public access.
+        const downloadUrl = `https://${S3_BUCKET_NAME}.s3.${S3_REGION}.amazonaws.com/${encodeURIComponent(uniqueFilename)}`;
+        console.log("Constructed public URL:", downloadUrl);
 
-        // Generate the URL, valid for 1 hour (3600 seconds)
-        const downloadUrl = await getSignedUrl(s3Client, getCommand, { expiresIn: 3600 });
-        console.log("Presigned URL generated.");
 
         // --- Send Success Response ---
-        // Render the HTML form again, now including the success message and download link
+        // Render the HTML form again, now including the success message and the public download link
         res.status(200).send(htmlForm(
             'File successfully uploaded!',
-            downloadUrl,
+            downloadUrl, // Use the direct public URL
             req.file.originalname // Pass original name for display
         ));
 
     } catch (error) {
         // --- Handle Errors ---
-        console.error("Error during S3 operation or URL generation:", error);
+        console.error("Error during S3 operation:", error); // Updated error log context
         // Send an error response back to the user
         res.status(500).send(htmlForm(`Error processing file: ${error.message || 'Unknown server error'}`));
     }
